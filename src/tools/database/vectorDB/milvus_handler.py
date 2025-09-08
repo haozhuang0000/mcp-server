@@ -134,6 +134,8 @@ class MilvusHandler:
             # Build filter expression
             filter_conditions = []
 
+            self.extract_unique_company_name()
+
             if filter_expr:
                 filter_conditions.append(filter_expr)
 
@@ -151,11 +153,11 @@ class MilvusHandler:
             final_filter = " and ".join(filter_conditions) if filter_conditions else None
 
             # Define search parameters
-            search_params = {
-                # "metric_type": "L2",
-                "metric_type": "COSINE",
-                "params": {"nprobe": 10}
-            }
+            # search_params = {
+            #     # "metric_type": "L2",
+            #     "metric_type": "COSINE",
+            #     "params": {"nprobe": 10}
+            # }
 
             search_param_1 = {
                 "data": [query_embedding],
@@ -175,15 +177,15 @@ class MilvusHandler:
             request_2 = AnnSearchRequest(**search_param_2)
 
             reqs = [request_1, request_2]
-
+            desc = self.client.describe_collection(self.collection_name)['fields']
+            fields = [i['name'] for i in desc if 'embedding' not in i['name']]
             results = self.client.hybrid_search(
                 collection_name=self.collection_name,
                 # filter=final_filter,
                 reqs=reqs,
                 ranker=ranker,
                 limit=top_k,
-                output_fields=["item_name", "company", "year", "item_type", "item_title",
-                                "chunk_text", "chunk_index", "metadata"]
+                output_fields=fields
             )
 
             # Format results
@@ -213,3 +215,13 @@ class MilvusHandler:
         except Exception as e:
             self.logger.error(f"❌ Search failed: {e}")
             raise
+
+    def extract_unique_company_name(self) -> List[str]:
+
+        results = self.client.query(
+            collection_name=self.collection_name,
+            filter="company != ''",  # filter to exclude empty strings
+            output_fields=["company"],
+            limit=10000  # adjust based on expected row count
+        )
+        return list(set(row["company"] for row in results))

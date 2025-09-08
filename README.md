@@ -16,20 +16,29 @@ A Model Context Protocol (MCP) server implementation that integrates LangChain a
 
 ## Installation
 
-### 1. Create and activate environment
+### 1. Install uv
+Linux / Mac
 ```bash
-conda create -n mcp python=3.12
-conda activate mcp
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+Windows
+```bash
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
 ### 2. Install dependencies
 ```bash
-pip install mcp langgraph langchain_mcp_adapters langchain pydantic python-dotenv starlette pymilvus
+uv sync
 ```
 
 ## Quick Start
 
 Here's a basic example of how to use the MCP server with LangChain:
+
+```
+cd src
+python main.py
+```
 
 ```python
 from mcp import ClientSession
@@ -67,6 +76,15 @@ MCP_SERVER_PORT=8000
 MILVUS_HOST=localhost
 MILVUS_PORT=19530
 OPENAI_API_KEY=your_openai_api_key_here
+
+MYSQL_HOST=
+MYSQL_PORT=
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_DATABASE=
+MYSQL_TABLE=
+
+EMBEDDING_END_POINT=<FASTAPI_HOSTED_EMBEDDING_MODEL>
 ```
 
 ## Acknowledgments
