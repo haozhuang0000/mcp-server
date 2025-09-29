@@ -1,7 +1,7 @@
 from src.server import mcp
 from src.tools.database.vectorDB import MilvusHandler
 from src.tools.database.vectorDB import a_embed_query
-from src.config import MILVUS_URL, MILVUS_DB_NAME, MILVUS_PW
+from src.config import MILVUS_CONFIG, VECTOR_DB_CONFIG
 from src.llm import llm
 
 from langchain_core.output_parsers import JsonOutputParser
@@ -24,7 +24,7 @@ async def extract_from_milvus(query: str):
     """
 
     ## Initialized class
-    milvus_handler = MilvusHandler(host=MILVUS_URL, db_name=MILVUS_DB_NAME, password=MILVUS_PW)
+    milvus_handler = MilvusHandler(host=MILVUS_CONFIG.url, db_name=MILVUS_CONFIG.db_name, password=MILVUS_CONFIG.password)
     embed_query = await a_embed_query(query)
     unique_company_name = milvus_handler.extract_unique_company_name()
     output_parser = JsonOutputParser(pydantic_object=FilterField)

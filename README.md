@@ -6,7 +6,10 @@ A Model Context Protocol (MCP) server implementation that integrates LangChain a
 
 - **MCP Integration**: Full Model Context Protocol support for seamless AI agent communication
 - **LangChain Compatibility**: Built-in support for LangChain tools and LangGraph agents
-- **Milvus Vector Database**: High-performance vector storage and similarity search
+- **Flexible Vector Database**: Configurable schemas for different document types and use cases
+- **Multiple Database Support**: Abstract interfaces for vector (Milvus) and tabular (MySQL) databases
+- **Dynamic Schema Creation**: Support for custom collection schemas with configurable fields
+- **Intelligent Search**: Automatic filter extraction from natural language queries
 - **RESTful API**: HTTP-based MCP server with streamable client support
 
 ## Prerequisites
@@ -58,11 +61,11 @@ async with streamablehttp_client("http://MCP_SERVER_ADDRESS:PORT/mcp/") as (read
         agent = create_react_agent("openai:gpt-4.1", tools)
         
         # Execute a query
-        response = await agent.ainvoke({
-            "messages": "What is the headquarters of NVIDIA? Year=2024, and company=NVIDIA"
+        response2 = await agent.ainvoke({
+            "messages": """please help find the total revenue for company: Singapore Airlines in year: 2024, you should search from vector database, the collection name is annual_report_0821"""
         })
         
-        print(response)
+        print(response2['messages'][-1].content)
 ```
 
 ## Configuration
@@ -71,20 +74,63 @@ async with streamablehttp_client("http://MCP_SERVER_ADDRESS:PORT/mcp/") as (read
 Create a `.env` file in your project root:
 
 ```env
+# MCP Server Configuration
 MCP_SERVER_HOST=localhost
 MCP_SERVER_PORT=8000
-MILVUS_HOST=localhost
-MILVUS_PORT=19530
-OPENAI_API_KEY=your_openai_api_key_here
 
-MYSQL_HOST=
-MYSQL_PORT=
-MYSQL_USER=
-MYSQL_PASSWORD=
-MYSQL_DATABASE=
-MYSQL_TABLE=
-
+# Vector Database Configuration
 EMBEDDING_END_POINT=<FASTAPI_HOSTED_EMBEDDING_MODEL>
+EMBEDDING_DIM=4096
+DEFAULT_COLLECTION=documents
+
+# Milvus Configuration
+MILVUS_URL=localhost
+MILVUS_DB_NAME=default
+MILVUS_PW=your_milvus_password
+
+# MySQL Configuration
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=your_mysql_user
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DATABASE=your_database_name
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+### Schema Types
+
+The generalized system supports multiple schema types:
+
+1. **Document Schema** (default): General-purpose schema for various document types
+2. **Annual Report Schema**: Specialized for financial reports with company/year filtering
+3. **Custom Schema**: User-defined schemas for specific use cases
+
+### Using Different Schemas
+
+```python
+# Document schema (default)
+vector_db = DatabaseFactory.create_vector_db(
+    "milvus",
+    collection_name="my_documents",
+    schema_type="document"
+)
+
+# Annual reports schema
+vector_db = DatabaseFactory.create_vector_db(
+    "milvus",
+    collection_name="annual_reports",
+    schema_type="annual_report"
+)
+
+# Custom schema
+custom_schema = SchemaFactory.create_custom_schema(
+    "custom_collection",
+    fields=[...],  # Your custom fields
+    embedding_dim=4096
+)
+vector_db.set_custom_schema(custom_schema)
 ```
 
 ## Acknowledgments

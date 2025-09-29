@@ -3,6 +3,7 @@ from src.server import mcp
 import src.tools.test_tools
 import src.tools.database.milvus_tools
 import src.tools.database.mysql_tools
+import src.tools.database.generalized_tools
 
 # Configure logging
 logging.basicConfig(
